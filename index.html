@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Sala do Futuro</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@mui/material@5.14.0/umd/material-ui.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        /* CSS mínimo para forçar os ícones do Material Design a renderizarem sem emojis */
+        .material-icons { font-family: 'Material Icons'; font-weight: normal; font-style: normal; font-size: 40px; display: inline-block; line-height: 1; text-transform: none; letter-spacing: normal; word-wrap: normal; white-space: nowrap; direction: ltr; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; -moz-osx-font-smoothing: grayscale; font-feature-settings: 'liga'; }
+    </style>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { ThemeProvider, createTheme, CssBaseline, Container, Box, TextField, Button, Typography, Grid, Card, CardContent, AppBar, Toolbar, CircularProgress } = MaterialUI;
+        const { useState } = React;
+
+        // Tema Estritamente Clean White
+        const cleanWhiteTheme = createTheme({
+            palette: {
+                background: { default: '#FFFFFF', paper: '#FFFFFF' },
+                text: { primary: '#1A1A1A', secondary: '#666666' },
+                primary: { main: '#000000' }
+            },
+            typography: { fontFamily: 'Roboto, sans-serif' }
+        });
+
+        function App() {
+            const [isLoggedIn, setIsLoggedIn] = useState(false);
+            const [loading, setLoading] = useState(false);
+            const [username, setUsername] = useState('');
+            const [password, setPassword] = useState('');
+            const [dashboardData, setDashboardData] = useState(null);
+            const [error, setError] = useState('');
+
+            // Mude para o link permanente do Render quando fizer o deploy do seu backend
+            const API_URL = 'http://localhost:3001/api/consulta'; 
+
+            const handleLogin = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                setError('');
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user: username, senha: password })
+                    });
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.error || 'Erro na requisição');
+                    
+                    setDashboardData(data);
+                    setIsLoggedIn(true);
+                } catch (err) {
+                    setError(err.message || 'Erro ao conectar ao servidor administrativo.');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            if (!isLoggedIn) {
+                return (
+                    <Container maxWidth="xs">
+                        <Box sx={{ marginTop: 12, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <Typography component="h1" variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
+                                Sala do Futuro Admin
+                            </Typography>
+                            <Box component="form" onSubmit={handleLogin} sx={{ mt: 1, width: '100%' }}>
+                                <TextField
+                                    margin="normal" required fullWidth
+                                    label="RA do Aluno (Ex: 1142842137SP)"
+                                    autoFocus value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                />
+                                <TextField
+                                    margin="normal" required fullWidth
+                                    label="Senha" type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                />
+                                {error && <Typography color="error" variant="body2" sx={{ mt: 1 }}>{error}</Typography>}
+                                <Button
+                                    type="submit" fullWidth variant="contained" disabled={loading}
+                                    sx={{ mt: 3, mb: 2, backgroundColor: '#000000', color: '#FFFFFF', '&:hover': { backgroundColor: '#333333' } }}
+                                >
+                                    {loading ? <CircularProgress size={24} color="inherit" /> : 'Acessar Painel'}
+                                </Button>
+                            </Box>
+                        </Box>
+                    </Container>
+                );
+            }
+
+            return (
+                <Box>
+                    <AppBar position="static" color="inherit" variant="outlined" sx={{ borderBottom: '1px solid #E0E0E0' }} elevation={0}>
+                        <Toolbar>
+                            <span class="material-icons" style={{ marginRight: '16px', color: '#1A1A1A', fontSize: '30px' }}>school</span>
+                            <Box sx={{ flexGrow: 1 }}>
+                                <Typography variant="h6" sx={{ color: '#1A1A1A', fontWeight: 600, fontSize: '1.1rem' }}>
+                                    {dashboardData?.aluno?.escola}
+                                </Typography>
+                                <Typography variant="body2" color="textSecondary">
+                                    Turma: {dashboardData?.aluno?.turma} | RA: {username.toUpperCase()}
+                                </Typography>
+                            </Box>
+                            <Button color="inherit" onClick={() => setIsLoggedIn(false)} sx={{ border: '1px solid #E0E0E0' }}>Sair</Button>
+                        </Toolbar>
+                    </AppBar>
+
+                    <Container maxWidth="lg" sx={{ mt: 6 }}>
+                        <Grid container spacing={3}>
+                            <Grid item xs={12} sm={6} md={3}>
+                                <Card variant="outlined">
+                                    <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                        <Box>
+                                            <Typography color="textSecondary" variant="overline" sx={{ fontWeight: 600 }}>Pendências</Typography>
+                                            <Typography variant="h4" sx={{ fontWeight: 700, mt: 1 }}>{dashboardData?.indicadores?.pendentes}</Typography>
+                                        </Box>
+                                        <span class="material-icons" style={{ color: '#666666' }}>assignment</span>
+                                    </CardContent>
+                                </Card>
+                            </Grid>
+
+                            <Grid item xs={12} sm={6} md={3}>
+                                <Card variant="outlined">
+                                    <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                        <Box>
+                                            <Typography color="textSecondary" variant="overline" sx={{ fontWeight: 600 }}>Expiradas</Typography>
+                                            <Typography variant="h4" sx={{ fontWeight: 700, mt: 1 }}>{dashboardData?.indicadores?.expiradas}</Typography>
+                                        </Box>
+                                        <span class="material-icons" style={{ color: '#666666' }}>history_toggle_off</span>
+                                    </CardContent>
+                                </Card>
+                            </Grid>
+
+                            <Grid item xs={12} sm={6} md={3}>
+                                <Card variant="outlined">
+                                    <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                        <Box>
+                                            <Typography color="textSecondary" variant="overline" sx={{ fontWeight: 600 }}>Avaliações</Typography>
+                                            <Typography variant="h4" sx={{ fontWeight: 700, mt: 1 }}>{dashboardData?.indicadores?.avaliacoes}</Typography>
+                                        </Box>
+                                        <span class="material-icons" style={{ color: '#666666' }}>assessment</span>
+                                    </CardContent>
+                                </Card>
+                            </Grid>
+
+                            <Grid item xs={12} sm={6} md={3}>
+                                <Card variant="outlined">
+                                    <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                        <Box>
+                                            <Typography color="textSecondary" variant="overline" sx={{ fontWeight: 600 }}>Redações</Typography>
+                                            <Typography variant="h4" sx={{ fontWeight: 700, mt: 1 }}>{dashboardData?.indicadores?.redacoes}</Typography>
+                                        </Box>
+                                        <span class="material-icons" style={{ color: '#666666' }}>rate_review</span>
+                                    </CardContent>
+                                </Card>
+                            </Grid>
+                        </Grid>
+                    </Container>
+                </Box>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(
+            <ThemeProvider theme={cleanWhiteTheme}>
+                <CssBaseline />
+                <App />
+            </ThemeProvider>
+        );
+    </script>
+</body>
+</html>
