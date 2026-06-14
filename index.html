@@ -40,7 +40,7 @@
             const [dashboardData, setDashboardData] = useState(null);
             const [error, setError] = useState('');
 
-            // Mude para o link permanente do Render quando fizer o deploy do seu backend
+            // Link permanente do seu backend no Render
             const API_URL = 'https://back-representasp.onrender.com/api/login'; 
 
             const handleLogin = async (e) => {
@@ -48,11 +48,18 @@
                 setLoading(true);
                 setError('');
                 try {
+                    // Normaliza o usuário para minúsculas antes de enviar (Ex: 114284187xsp)
+                    const usuarioFormatado = username.trim().toLowerCase();
+
                     const response = await fetch(API_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ user: username, senha: password })
+                        body: JSON.stringify({ 
+                            usuario: usuarioFormatado, // Corrigido de 'user' para 'usuario'
+                            senha: password 
+                        })
                     });
+                    
                     const data = await response.json();
                     if (!response.ok) throw new Error(data.error || 'Erro na requisição');
                     
@@ -102,10 +109,10 @@
                 <Box>
                     <AppBar position="static" color="inherit" variant="outlined" sx={{ borderBottom: '1px solid #E0E0E0' }} elevation={0}>
                         <Toolbar>
-                            <span class="material-icons" style={{ marginRight: '16px', color: '#1A1A1A', fontSize: '30px' }}>school</span>
+                            <span className="material-icons" style={{ marginRight: '16px', color: '#1A1A1A', fontSize: '30px' }}>school</span>
                             <Box sx={{ flexGrow: 1 }}>
                                 <Typography variant="h6" sx={{ color: '#1A1A1A', fontWeight: 600, fontSize: '1.1rem' }}>
-                                    {dashboardData?.aluno?.escola}
+                                    {dashboardData?.aluno?.nome || "Estudante"}
                                 </Typography>
                                 <Typography variant="body2" color="textSecondary">
                                     Turma: {dashboardData?.aluno?.turma} | RA: {username.toUpperCase()}
@@ -124,7 +131,7 @@
                                             <Typography color="textSecondary" variant="overline" sx={{ fontWeight: 600 }}>Pendências</Typography>
                                             <Typography variant="h4" sx={{ fontWeight: 700, mt: 1 }}>{dashboardData?.indicadores?.pendentes}</Typography>
                                         </Box>
-                                        <span class="material-icons" style={{ color: '#666666' }}>assignment</span>
+                                        <span className="material-icons" style={{ color: '#666666' }}>assignment</span>
                                     </CardContent>
                                 </Card>
                             </Grid>
@@ -136,7 +143,7 @@
                                             <Typography color="textSecondary" variant="overline" sx={{ fontWeight: 600 }}>Expiradas</Typography>
                                             <Typography variant="h4" sx={{ fontWeight: 700, mt: 1 }}>{dashboardData?.indicadores?.expiradas}</Typography>
                                         </Box>
-                                        <span class="material-icons" style={{ color: '#666666' }}>history_toggle_off</span>
+                                        <span className="material-icons" style={{ color: '#666666' }}>history_toggle_off</span>
                                     </CardContent>
                                 </Card>
                             </Grid>
@@ -148,7 +155,7 @@
                                             <Typography color="textSecondary" variant="overline" sx={{ fontWeight: 600 }}>Avaliações</Typography>
                                             <Typography variant="h4" sx={{ fontWeight: 700, mt: 1 }}>{dashboardData?.indicadores?.avaliacoes}</Typography>
                                         </Box>
-                                        <span class="material-icons" style={{ color: '#666666' }}>assessment</span>
+                                        <span className="material-icons" style={{ color: '#666666' }}>assessment</span>
                                     </CardContent>
                                 </Card>
                             </Grid>
@@ -160,7 +167,7 @@
                                             <Typography color="textSecondary" variant="overline" sx={{ fontWeight: 600 }}>Redações</Typography>
                                             <Typography variant="h4" sx={{ fontWeight: 700, mt: 1 }}>{dashboardData?.indicadores?.redacoes}</Typography>
                                         </Box>
-                                        <span class="material-icons" style={{ color: '#666666' }}>rate_review</span>
+                                        <span className="material-icons" style={{ color: '#666666' }}>rate_review</span>
                                     </CardContent>
                                 </Card>
                             </Grid>
